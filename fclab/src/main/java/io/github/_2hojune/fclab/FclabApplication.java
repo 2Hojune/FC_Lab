@@ -1,4 +1,4 @@
-package io.github._hojune.fclab;
+package io.github._2hojune.fclab;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
