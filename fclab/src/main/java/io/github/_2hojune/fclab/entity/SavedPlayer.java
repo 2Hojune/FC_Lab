@@ -15,7 +15,7 @@ public class SavedPlayer {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // 객체 지향의 꽃! Member 객체와 직접 연결합니다.
+    // Member 객체와 연결
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
@@ -29,7 +29,7 @@ public class SavedPlayer {
     @Column(length = 50)
     private String teamColor;
 
-    // JSON 형태의 문자열이 들어갈 자리입니다.
+    // JSON 형태의 문자열이 들어갈 자리
     @Column(columnDefinition = "json")
     private String focusTraining;
 

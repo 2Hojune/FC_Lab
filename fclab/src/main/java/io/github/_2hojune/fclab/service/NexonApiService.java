@@ -61,7 +61,7 @@ public class NexonApiService {
             // 2. 넥슨 서버에서 전체 선수 명단(JSON) 가져오기
             String jsonResponse = restTemplate.getForObject(url, String.class);
 
-            // 3. 거대한 JSON 명단에서 내가 찾는 spid 딱 한 명만 쏙 뽑아내기
+            // 3.  JSON 명단에서  찾는 spid 딱 한 명만  뽑아내기
             JsonNode rootArray = objectMapper.readTree(jsonResponse);
 
             for (JsonNode playerNode : rootArray) {

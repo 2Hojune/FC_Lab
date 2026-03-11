@@ -27,7 +27,7 @@ public class Member {
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
-    // 엔티티가 DB에 저장되기 전에 자동으로 현재 시간을 세팅합니다.
+    // 엔티티가 DB에 저장되기 전에 자동으로 현재 시간을 세팅.
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
