@@ -1,0 +1,16 @@
+# application.yml
+spring:
+  profiles:
+    include: secret
+  datasource:
+    url: jdbc:mysql://localhost:3306/fconline?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
+    username: root
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    open-in-view: false
+
+nexon:
+  api:
+    base-url: "https://open.api.nexon.com/fconline/v1"
