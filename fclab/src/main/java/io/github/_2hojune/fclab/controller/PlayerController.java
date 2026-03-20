@@ -2,15 +2,14 @@ package io.github._2hojune.fclab.controller;
 
 
 import io.github._2hojune.fclab.service.NexonApiService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import tools.jackson.databind.JsonNode;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:5174")
 @RequestMapping("/api/players")
 public class PlayerController {
     private final NexonApiService nexonApiService;
@@ -23,11 +22,13 @@ public class PlayerController {
     @GetMapping("/name/{name}")
     public List<JsonNode> searchPlayerByName(@PathVariable String name) {
         return nexonApiService.searchPlayerByName(name);
+
     }
 
-    // spid 검색
-    @GetMapping("/{spid}")
-    public String seachPlayer(@PathVariable int spid) {
-        return nexonApiService.getPlayerInfo(spid);
+
+    @GetMapping("/ability/{spid}")
+    public Map<String, String> getAbility(@PathVariable int spid) {
+        return nexonApiService.getPlayerAbility(spid);
     }
+
 }

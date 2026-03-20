@@ -1,17 +1,22 @@
 package io.github._2hojune.fclab.service;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class NexonApiService {
@@ -45,7 +50,6 @@ public class NexonApiService {
                     foundPlayers.add(playerNode);
                 }
             }
-
             return foundPlayers;
         } catch (Exception e) {
             return foundPlayers;
@@ -53,29 +57,47 @@ public class NexonApiService {
         }
     }
 
-    public String getPlayerInfo(int spid) {
-        // 1. 유저가 아닌 '선수 메타데이터' 주소
-        String url = "https://open.api.nexon.com/static/fconline/meta/spid.json";
+    public Map<String, String> getPlayerAbility(int spid) {
+        String url = "https://fconline.nexon.com/datacenter/PlayerAbility";
+        Map<String, String> stats = new HashMap<>();
 
         try {
-            // 2. 넥슨 서버에서 전체 선수 명단(JSON) 가져오기
-            String jsonResponse = restTemplate.getForObject(url, String.class);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+            headers.set("User-Agent", "Mozilla/5.0");
 
-            // 3.  JSON 명단에서  찾는 spid 딱 한 명만  뽑아내기
-            JsonNode rootArray = objectMapper.readTree(jsonResponse);
+            // POST로 보낼 파라미터 세팅 (spid를 담아서 보내야 함)
+            MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+            params.add("spid", String.valueOf(spid));
+            params.add("n1Strong", "1"); // 1강 기준
 
-            for (JsonNode playerNode : rootArray) {
-                if (playerNode.get("id").asInt() == spid) {
-                    // {"id": 101000208, "name": "리오넬 메시"} 반환
-                    return playerNode.toString();
+            HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(params, headers);
+            String html = restTemplate.postForObject(url, entity, String.class);
+
+            // Jsoup
+            Document doc = Jsoup.parse(html);
+
+            // 선수 이름 추출
+            stats.put("name", doc.select(".info_name .name").text());
+
+            // 모든 능력치 항목(<li class="ab">)을 돌면서 텍스트와 값 추출
+            Elements abilityList = doc.select("li.ab");
+            for (Element ab : abilityList) {
+                String title = ab.select(".txt").text(); // "속력", "가속력" 등
+                String value = ab.select(".value").first().ownText().trim(); // "131" 등
+
+                if (!title.isEmpty() && !value.isEmpty()) {
+                    stats.put(title, value);
                 }
+
             }
-            return "해당 spid를 가진 선수가 없습니다.";
+            return stats;
 
         } catch (Exception e) {
-            return "API 호출 중 에러 발생: " + e.getMessage();
+            stats.put("error", e.getMessage());
+            return stats;
 
         }
 
     }
-    }
+}
