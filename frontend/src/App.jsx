@@ -3,6 +3,12 @@ import { searchPlayersByName, getPlayerAbility } from './api/api'
 import SearchBar from './components/SearchBar'
 import PlayerCard from './components/PlayerCard'
 
+const isKnownText = (value) => {
+  if (typeof value !== 'string') return false
+  const normalized = value.trim().toLowerCase()
+  return normalized !== '' && normalized !== 'unknown' && normalized !== 'null' && normalized !== 'undefined'
+}
+
 function App() {
   const [name, setName] = useState('')
   const [players, setPlayers] = useState([])
@@ -43,7 +49,14 @@ function App() {
   return (
     <div style={{ padding: '50px', fontFamily: 'sans-serif' }}>
       <h1>⚽ FC Lab 선수 검색</h1>
-      <SearchBar name={name} onNameChange={setName} onSearch={handleSearch} loading={loading} />
+      <SearchBar
+        name={name}
+        onNameChange={setName}
+        onSearch={handleSearch}
+        loading={loading}
+        selectedPlayer={selectedPlayer}
+        playerStats={playerStats}
+      />
       <hr />
       <h2>검색 결과 ({players.length}명)</h2>
       <ul style={{ listStyle: 'none', padding: 0 }}>
@@ -70,7 +83,8 @@ function App() {
             tabIndex={0}
             onKeyDown={(e) => (e.key === 'Enter' ? handlePlayerClick(player) : null)}
           >
-            <strong>{player.name}</strong> (spid: {player.id})
+            <strong>{player.name}</strong>
+            {isKnownText(player.seasonName) ? ` · ${player.seasonName}` : ''}
           </li>
         ))}
       </ul>
