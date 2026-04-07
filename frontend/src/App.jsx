@@ -84,7 +84,15 @@ function App() {
             onKeyDown={(e) => (e.key === 'Enter' ? handlePlayerClick(player) : null)}
           >
             <strong>{player.name}</strong>
-            {isKnownText(player.seasonName) ? ` · ${player.seasonName}` : ''}
+            {player.seasonImg ? (
+              <img
+                src={player.seasonImg}
+                alt="logo"
+                style={{ height: '16px', marginLeft: '8px', verticalAlign: 'middle' }}
+              />
+            ) : (
+              isKnownText(player.seasonName) ? ` · ${player.seasonName}` : ''
+            )}
           </li>
         ))}
       </ul>

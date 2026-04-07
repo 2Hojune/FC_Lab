@@ -67,20 +67,34 @@ function PlayerInfo({ player, fallbackName }) {
 
     const displayName = player?.name || fallbackName
     const seasonBadge = player?.seasonName
+    const seasonImg = player?.seasonImg
 
     return (
         <div style={{ marginBottom: '10px' }}>
       <span style={{ fontWeight: 700, fontSize: '26px', color: 'var(--accent, #aa3bff)', verticalAlign: 'middle' }}>
         {displayName}
       </span>
-            {isKnownText(seasonBadge) && (
+
+      {seasonImg ? (
+        <img
+          src={seasonImg}
+          alt={seasonBadge || 'Season Logo'}
+          style={{
+            marginLeft: '12px',
+            height: '24px', // 로고 크기 조절 (글자 크기와 어울리게 24px 추천)
+            verticalAlign: 'middle',
+            transform: 'translateY(-2px)' // 살짝 위로 올려서 텍스트와 줄 맞춤
+          }}
+        />
+      ) : (
+            isKnownText(seasonBadge) && (
                 <span
                     style={{
                         marginLeft: '12px',
                         fontSize: '13px',
                         fontWeight: 600,
                         color: '#fff',
-                        backgroundColor: 'var(--accent, #aa3bff)', // 눈에 확 띄는 보라색 배지
+                        backgroundColor: 'var(--accent, #aa3bff)',
                         padding: '4px 10px',
                         borderRadius: '20px',
                         verticalAlign: 'middle',
@@ -90,6 +104,7 @@ function PlayerInfo({ player, fallbackName }) {
                 >
           {seasonBadge}
         </span>
+            )
             )}
         </div>
     )
