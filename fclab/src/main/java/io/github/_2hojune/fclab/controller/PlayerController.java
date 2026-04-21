@@ -26,15 +26,14 @@ public class PlayerController {
     }
 
     // 이름검색
-    @GetMapping("/name/{name}")
-    public List<JsonNode> searchPlayerByName(@PathVariable String name) {
+    @GetMapping("/search")
+    public List<JsonNode> searchPlayerByName(@RequestParam("name") String name) {
         return playerSearchService.searchPlayerByName(name);
 
     }
 
-
     @GetMapping("/ability/{spid}")
-    public Map<String, String> getAbility(@PathVariable int spid) {
+    public Map<String, String> getAbility(@PathVariable("spid") int spid) {
         return playerStatService.getPlayerAbility(spid);
     }
 

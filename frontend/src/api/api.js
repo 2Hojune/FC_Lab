@@ -9,7 +9,7 @@ export const api = axios.create({
 })
 
 export async function searchPlayersByName(name) {
-  const { data } = await api.get(`/api/players/name/${encodeURIComponent(name)}`)
+  const { data } = await api.get(`/api/players/search?name=${encodeURIComponent(name)}`)
   return data
 }
 

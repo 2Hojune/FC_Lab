@@ -88,7 +88,7 @@ class NexonApiServiceTest {
     class SearchServiceTest {
 
         @Test
-        @DisplayName("시즌 데이터가 캐싱되고, 결과 JSON에 seasonName과 seasonImg가 주입된다")
+        @DisplayName("시즌 데이터가 캐싱되고, JSON에 seasonName과 seasonImg가 주입된다")
         void searchPlayerByNameWithSeasonCacheTest() throws Exception {
 
             // Given
@@ -114,6 +114,7 @@ class NexonApiServiceTest {
                         }
                     ]
                     """;
+
             when(restTemplate.getForObject(contains("seasonid.json"), eq(String.class)))
                     .thenReturn(fakeSeasonResponse);
             when(restTemplate.getForObject(contains("spid.json"), eq(String.class)))
