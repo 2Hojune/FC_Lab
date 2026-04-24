@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/fclab.iml" filepath="$PROJECT_DIR$/.idea/fclab.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/io.github.2hojune.fclab.main.iml" filepath="$PROJECT_DIR$/.idea/modules/io.github.2hojune.fclab.main.iml" />
     </modules>
   </component>
 </project>

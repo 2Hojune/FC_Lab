@@ -48,7 +48,7 @@ function App() {
 
   return (
     <div style={{ padding: '50px', fontFamily: 'sans-serif' }}>
-      <h1>⚽ FC Lab 선수 검색</h1>
+      <h1>⚽ FC Lab</h1>
       <SearchBar
         name={name}
         onNameChange={setName}
