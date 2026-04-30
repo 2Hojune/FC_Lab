@@ -1,0 +1,5 @@
+# [1] IDE 설정
+.idea/
+*.iml
+*.iws
+*.ipr
