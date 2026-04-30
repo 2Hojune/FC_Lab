@@ -14,3 +14,12 @@ spring:
 nexon:
   api:
     base-url: "https://open.api.nexon.com/fconline/v1"
+
+# swagger 설정
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html # 접속 주소 설정
+    disable-swagger-default-url: true
+    display-request-duration: true
+    operations-sorter: alpha # 알파벳 순 정렬
+

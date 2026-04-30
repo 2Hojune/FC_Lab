@@ -17,3 +17,17 @@ export async function getPlayerAbility(spid) {
   const { data } = await api.get(`/api/players/ability/${spid}`)
   return data
 }
+
+export async function savePlayerPreset(presetName, playersData) {
+  // 백엔드의 PresetSaveRequest 구조와 똑같이 생긴 객체를 만듭니다.
+  const payload = {
+    presetName: presetName,
+    players: playersData // 프론트에서 세팅한 선수들의 배열 [{ spid: 100, grade: 8... }, ...]
+  };
+
+  // 💡 데이터를 '생성'하는 것이므로 api.get 이 아니라 api.post 를 사용합니다!
+  const { data } = await api.post(`/api/presets`, payload);
+  
+  return data;
+}
+

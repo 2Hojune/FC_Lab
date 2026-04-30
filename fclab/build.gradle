@@ -35,9 +35,13 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	runtimeOnly 'com.mysql:mysql-connector-j'
 	implementation 'org.jsoup:jsoup:1.17.2' //스텟 가져오기
+// Spring Boot 4.x 전용 Swagger (SpringDoc 3.0.x)
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3'
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
 	jvmArgs '-Xshare:off' //JVM 아규먼트 설정
 }
+
+
