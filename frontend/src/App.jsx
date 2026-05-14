@@ -23,7 +23,12 @@ function App() {
     setPlayerStats(null)
     setSelectedPlayer(null)
     try {
-      setPlayers(await searchPlayersByName(name))
+      const results = await searchPlayersByName(name)
+      setPlayers(results)
+
+      if (results.length === 0) {
+        alert('이름에 맞는 선수가 없습니다.')
+      }
     } catch (error) {
       console.error('데이터 가져오기 실패:', error)
       alert('백엔드와 연결되지 않았습니다! 서버가 켜져 있는지 확인해주세요.')

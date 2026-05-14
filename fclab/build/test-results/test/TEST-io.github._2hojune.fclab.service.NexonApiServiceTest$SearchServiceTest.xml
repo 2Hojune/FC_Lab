@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="PlayerSearchService 테스트" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-04-09T13:31:40.350Z" hostname="HOJUNE" time="1.906">
+  <properties/>
+  <testcase name="시즌 데이터가 캐싱되고, JSON에 seasonName과 seasonImg가 주입된다" classname="io.github._2hojune.fclab.service.NexonApiServiceTest$SearchServiceTest" time="1.664"/>
+  <system-out><![CDATA[✅ FC Lab: 시즌 메타데이터 및 이미지 캐싱 완료!
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

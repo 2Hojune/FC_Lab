@@ -1,5 +1,71 @@
-# [1] IDE 설정
-.idea/
-*.iml
+# ==========================================
+# 1. Common (OS, Logs)
+# ==========================================
+.DS_Store
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ==========================================
+# 2. IDEs & Editors
+# ==========================================
+### IntelliJ IDEA ###
+.idea
 *.iws
+*.iml
 *.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+### VS Code ###
+.vscode/
+!.vscode/extensions.json
+
+### STS (Spring Tool Suite) & Eclipse ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### Other Editors ###
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ==========================================
+# 4. Frontend (Node.js, Vue/React)
+# ==========================================
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# ==========================================
+# 5. Security
+# ==========================================
+*secret*.yml
+application-secret.yml
+secret.yml
+.env
+.env.local
+.env.*
