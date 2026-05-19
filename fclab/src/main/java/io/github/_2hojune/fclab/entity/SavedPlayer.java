@@ -1,6 +1,7 @@
 package io.github._2hojune.fclab.entity;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -20,21 +21,26 @@ public class SavedPlayer {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
+    // 커스텀 네임(ex: 양발, 신규특성)
     @Column(nullable = false, length = 100)
     private String buildName;
 
     @Column(nullable = false)
-    private Integer spid;
+    private int spid;
 
-    @Column(length = 50)
-    private String teamColor;
 
-    // JSON 형태의 문자열이 들어갈 자리
-    @Column(columnDefinition = "json")
-    private String focusTraining;
+    // 유저 세팅 값
+    @Column(nullable = false)
+    private int grade; // 강화등급
 
-    @Column(columnDefinition = "json")
-    private String traits;
+    @Column(nullable = false)
+    private int adaptability; // 적응도 (기본 1)
+
+    @Column(name = "team_color", length = 50)
+    private String teamColor; // 팀 컬러
+
+    @Column(name = "focus_training", columnDefinition = "json")
+    private String focusTraining; // 집중 훈련 (json)
 
     @Column(updatable = false)
     private LocalDateTime createdAt;
@@ -42,5 +48,15 @@ public class SavedPlayer {
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
+    }
+    @Builder
+    public SavedPlayer(Member member, String buildName, int spid, int grade, int adaptability, String teamColor, String focusTraining) {
+        this.member = member;
+        this.buildName = buildName;
+        this.spid = spid;
+        this.grade = grade;
+        this.adaptability = adaptability;
+        this.teamColor = teamColor;
+        this.focusTraining = focusTraining;
     }
 }
