@@ -1,6 +1,7 @@
 package io.github._2hojune.fclab.service;
 
 import io.github._2hojune.fclab.dto.SavedPlayerRequest;
+import io.github._2hojune.fclab.dto.SavedPlayerResponse;
 import io.github._2hojune.fclab.entity.Member;
 import io.github._2hojune.fclab.entity.SavedPlayer;
 import io.github._2hojune.fclab.repository.MemberRepository;
@@ -38,8 +39,20 @@ public class SavedPlayerService {
     }
 
     // 회원의 저장된 선수 목록 조회
-    public List<SavedPlayer> getSavedPlayers(Long memberId) {
-        return savedPlayerRepository.findByMember_Id(memberId);
+    public List<SavedPlayerResponse> getSavedPlayers(Long memberId) {
+        List<SavedPlayer> players = savedPlayerRepository.findByMember_Id(memberId);
+
+        return players.stream()
+                .map(player -> new SavedPlayerResponse(
+                        player.getId(),
+                        player.getBuildName(),
+                        player.getSpid(),
+                        player.getGrade(),
+                        player.getAdaptability(),
+                        player.getTeamColor(),
+                        player.getFocusTraining()
+                ))
+                .toList();
     }
 
 }
