@@ -2,6 +2,8 @@ package io.github._2hojune.fclab.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import java.util.Map;
+
 // 프론트 -> 백엔드 (선수 딱 1명 저장용)
 public record SavedPlayerRequest(
         @Schema(description = "유저가 작성한 이름", example = "신특 양발 쏜")
@@ -19,6 +21,6 @@ public record SavedPlayerRequest(
         @Schema(description = "적용할 팀 컬러 식별값", example = "토트넘")
         String teamColor,     // 팀 컬러
 
-        @Schema(description = "집중 훈련 포인트 설정값 (JSON 문자열)", example = "{\"speed\": 4, \"dribble\": 2}")
-        String focusTraining  // 집중 훈련 (JSON 형태의 문자열)
+        @Schema(description = "집중 훈련 포인트 설정값 (JSON 문자열)", example = "{\"speed\": 4,\"dribble\": 2}")
+        Map<String, Integer> focusTraining  // 집중 훈련 (JSON 형태의 문자열)
 ) {}
