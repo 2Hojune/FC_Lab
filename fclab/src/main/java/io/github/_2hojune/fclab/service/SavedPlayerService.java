@@ -48,6 +48,7 @@ public class SavedPlayerService {
         return savedPlayerRepository.save(savedPlayer).getId();
     }
 
+    //-----------------------------------------------------------------------------------------------------------------------
     // 회원의 저장된 선수 목록 조회
     public List<SavedPlayerResponse> getSavedPlayers(Long memberId) {
         List<SavedPlayer> players = savedPlayerRepository.findByMember_Id(memberId);
@@ -57,7 +58,6 @@ public class SavedPlayerService {
                     // DB의 String -> Map 변환 (역직렬화)
                     Map<String, Integer> focusTrainingMap = null;
                     if (player.getFocusTraining() != null && !player.getFocusTraining().isEmpty()) {
-                        // Jackson에게 Map<String, Integer> 구조로 정밀하게 쪼개달라고 요청하는 코드입니다.
                         focusTrainingMap = objectMapper.readValue(
                                 player.getFocusTraining(),
                                 new TypeReference<>() {
@@ -72,9 +72,26 @@ public class SavedPlayerService {
                             player.getGrade(),
                             player.getAdaptability(),
                             player.getTeamColor(),
-                            focusTrainingMap // 프론트엔드가 바로 사용할 수 있는 깨끗한 객체 전달!
+                            focusTrainingMap
                     );
                 })
                 .toList();
     }
+
+    //-----------------------------------------------------------------------------------------------------------------------
+
+    @Transactional
+    public void deletePlayer(Long memberId, Long savedPlayerId) {
+        // 1. 삭제할 선수가 DB에 존재하는지 확인
+        SavedPlayer savedPlayer = savedPlayerRepository.findById(savedPlayerId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 저장된 선수를 찾을 수 없습니다. (ID: " + savedPlayerId + ")"));
+
+        // 2. 권한 검증: ID 확인
+        if (!savedPlayer.getMember().getId().equals(memberId)) {
+            throw new IllegalArgumentException("이 선수를 삭제할 권한이 없습니다.");
+        }
+
+        savedPlayerRepository.delete(savedPlayer);
     }
+
+}

@@ -2,7 +2,6 @@ package io.github._2hojune.fclab.controller;
 
 import io.github._2hojune.fclab.dto.SavedPlayerRequest;
 import io.github._2hojune.fclab.dto.SavedPlayerResponse;
-import io.github._2hojune.fclab.entity.SavedPlayer;
 import io.github._2hojune.fclab.service.SavedPlayerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -39,6 +38,7 @@ public class SavedPlayerController {
         return ResponseEntity.ok(savedId);
     }
 
+    //-----------------------------------------------------------------------------------------------------------------------
     // 저장된 선수 조회 API
     @Operation(summary = "저장된 선수 목록 조회", description = "특정 회원의 보관함에 저장된 모든 선수 리스트를 조회합니다. (비교 슬롯용)")
     @ApiResponses(value = {
@@ -51,5 +51,23 @@ public class SavedPlayerController {
             @RequestParam("memberId") Long memberId) {
         List<SavedPlayerResponse> list = savedPlayerService.getSavedPlayers(memberId);
         return ResponseEntity.ok(list);
+    }
+    //-----------------------------------------------------------------------------------------------------------------------
+    @Operation(summary = "저장된 선수 삭제", description = "보관함에서 특정 선수를 삭제합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "선수 삭제 성공"),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청 (선수가 없거나 삭제 권한이 없음)")
+    })
+    @DeleteMapping("/{deletePlayerId}")
+    public ResponseEntity<Void> deletePlayer(
+            @Parameter(description = "요청하는 회원의 고유 ID", example = "1")
+            @RequestParam("memberId") Long memberId,
+
+            @Parameter(description = "삭제할 보관함 선수의 고유 ID", example = "5")
+            @PathVariable("deletePlayerId") Long savedPlayerId) {
+
+        savedPlayerService.deletePlayer(memberId, savedPlayerId);
+
+        return ResponseEntity.ok().build();
     }
 }
