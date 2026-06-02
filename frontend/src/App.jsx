@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { searchPlayersByName, getPlayerAbility } from './api/api'
 import SearchBar from './components/SearchBar'
 import PlayerCard from './components/PlayerCard'
+import MyLocker from './components/MyLocker'
 
 const isKnownText = (value) => {
   if (typeof value !== 'string') return false
@@ -10,6 +11,7 @@ const isKnownText = (value) => {
 }
 
 function App() {
+  const [page, setPage] = useState('search')
   const [name, setName] = useState('')
   const [players, setPlayers] = useState([])
   const [loading, setLoading] = useState(false)
@@ -54,54 +56,93 @@ function App() {
   return (
     <div style={{ padding: '50px', fontFamily: 'sans-serif' }}>
       <h1>⚽ FC Lab</h1>
-      <SearchBar
-        name={name}
-        onNameChange={setName}
-        onSearch={handleSearch}
-        loading={loading}
-        selectedPlayer={selectedPlayer}
-        playerStats={playerStats}
-      />
-      <hr />
-      <h2>검색 결과 ({players.length}명)</h2>
-      <ul style={{ listStyle: 'none', padding: 0 }}>
-        {players.map((player) => (
-          <li
-            key={player.id}
-            style={{
-              margin: '10px 0',
-              fontSize: '18px',
-              cursor: 'pointer',
-              padding: '8px 14px',
-              borderRadius: '7px',
-              background:
-                selectedPlayer && selectedPlayer.id === player.id
-                  ? 'var(--accent-bg, #f4f3ec)'
-                  : 'transparent',
-              border:
-                selectedPlayer && selectedPlayer.id === player.id
-                  ? '2px solid var(--accent, #aa3bff)'
-                  : '2px solid transparent',
-              transition: 'background 0.2s, border-color 0.2s',
-            }}
-            onClick={() => handlePlayerClick(player)}
-            tabIndex={0}
-            onKeyDown={(e) => (e.key === 'Enter' ? handlePlayerClick(player) : null)}
-          >
-            <strong>{player.name}</strong>
-            {player.seasonImg ? (
-              <img
-                src={player.seasonImg}
-                alt="logo"
-                style={{ height: '16px', marginLeft: '8px', verticalAlign: 'middle' }}
-              />
-            ) : (
-              isKnownText(player.seasonName) ? ` · ${player.seasonName}` : ''
-            )}
-          </li>
-        ))}
-      </ul>
-      <PlayerCard selectedPlayer={selectedPlayer} playerStats={playerStats} statLoading={statLoading} />
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '18px' }}>
+        <button
+          type="button"
+          onClick={() => setPage('search')}
+          style={{
+            padding: '8px 14px',
+            borderRadius: '8px',
+            border: '1px solid var(--accent-border, #c084fc77)',
+            background: page === 'search' ? 'var(--accent, #aa3bff)' : '#fff',
+            color: page === 'search' ? '#fff' : 'var(--text-h, #333)',
+            cursor: 'pointer',
+            fontWeight: 700,
+          }}
+        >
+          선수 검색
+        </button>
+        <button
+          type="button"
+          onClick={() => setPage('locker')}
+          style={{
+            padding: '8px 14px',
+            borderRadius: '8px',
+            border: '1px solid var(--accent-border, #c084fc77)',
+            background: page === 'locker' ? 'var(--accent, #aa3bff)' : '#fff',
+            color: page === 'locker' ? '#fff' : 'var(--text-h, #333)',
+            cursor: 'pointer',
+            fontWeight: 700,
+          }}
+        >
+          내 라커룸
+        </button>
+      </div>
+
+      {page === 'search' ? (
+        <>
+          <SearchBar
+            name={name}
+            onNameChange={setName}
+            onSearch={handleSearch}
+            loading={loading}
+            selectedPlayer={selectedPlayer}
+            playerStats={playerStats}
+          />
+          <hr />
+          <h2>검색 결과 ({players.length}명)</h2>
+          <ul style={{ listStyle: 'none', padding: 0 }}>
+            {players.map((player) => (
+              <li
+                key={player.id}
+                style={{
+                  margin: '10px 0',
+                  fontSize: '18px',
+                  cursor: 'pointer',
+                  padding: '8px 14px',
+                  borderRadius: '7px',
+                  background:
+                    selectedPlayer && selectedPlayer.id === player.id
+                      ? 'var(--accent-bg, #f4f3ec)'
+                      : 'transparent',
+                  border:
+                    selectedPlayer && selectedPlayer.id === player.id
+                      ? '2px solid var(--accent, #aa3bff)'
+                      : '2px solid transparent',
+                  transition: 'background 0.2s, border-color 0.2s',
+                }}
+                onClick={() => handlePlayerClick(player)}
+                tabIndex={0}
+                onKeyDown={(e) => (e.key === 'Enter' ? handlePlayerClick(player) : null)}
+              >
+                <strong>{player.name}</strong>
+                {player.seasonImg ? (
+                  <img
+                    src={player.seasonImg}
+                    alt="logo"
+                    style={{ height: '16px', marginLeft: '8px', verticalAlign: 'middle' }}
+                  />
+                ) : (
+                  isKnownText(player.seasonName) ? ` · ${player.seasonName}` : ''
+                )}
+              </li>
+            ))}
+          </ul>
+          <PlayerCard selectedPlayer={selectedPlayer} playerStats={playerStats} statLoading={statLoading} />
+        </>
+      ) : (
+        <MyLocker />
+      )}
     </div>
   )
 }
