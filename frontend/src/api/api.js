@@ -7,26 +7,40 @@ export const api = axios.create({
   timeout: 30000,
 })
 
+// 선수검색
 export async function searchPlayersByName(name) {
   const { data } = await api.get(`/api/players/search?name=${encodeURIComponent(name)}`)
   return data
 }
 
+// 선수 능력치 조회
 export async function getPlayerAbility(spid) {
   const { data } = await api.get(`/api/players/ability/${spid}`)
   return data
 }
 
-export async function savePlayerPreset(presetName, playersData) {
-  // 백엔드의 PresetSaveRequest 구조와 똑같이 생긴 객체를 만듭니다.
-  const payload = {
-    presetName: presetName,
-    players: playersData // 프론트에서 세팅한 선수들의 배열 [{ spid: 100, grade: 8... }, ...]
-  };
+export const savedPlayerApi = {
+  // 1. 보관함 조회 (GET)
+  getSavedPlayers: async (memberId) => {
+      const response = await api.get(`/api/saved-players`, {
+          params: { memberId },
+      })
+      return response.data // List<SavedPlayerResponse> 반환
+  },
 
-  // 💡 데이터를 '생성'하는 것이므로 api.get 이 아니라 api.post 를 사용합니다!
-  const { data } = await api.post(`/api/presets`, payload);
-  
-  return data;
+  // 2. 선수 저장 (POST)
+  savePlayer: async (memberId, requestData) => {
+      const response = await api.post(`/api/saved-players`, requestData, {
+          params: { memberId },
+      })
+      return response.data // 저장된 ID 반환
+  },
+
+  // 3. 선수 삭제 (DELETE)
+  deletePlayer: async (memberId, savedPlayerId) => {
+      const response = await api.delete(`/api/saved-players/${savedPlayerId}`, {
+          params: { memberId },
+      })
+      return response.data
+  }
 }
-

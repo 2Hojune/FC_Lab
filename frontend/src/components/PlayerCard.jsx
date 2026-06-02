@@ -1,3 +1,7 @@
+import { useState } from 'react'
+
+import { savedPlayerApi } from '../api/api'
+
 const COLS_PER_ROW = 4
 
 const isKnownText = (value) => {
@@ -9,7 +13,7 @@ const isKnownText = (value) => {
 // 💡 스탯만 순수하게 그리는 컴포넌트로 역할 축소! (이름 렌더링 제거)
 function StatsGrid({ stats }) {
     if (!stats) return null
-    const { name, error, ...otherStats } = stats
+    const { error, ...otherStats } = stats
 
     // 에러 발생 시 처리
     if (error) {
@@ -111,6 +115,55 @@ function PlayerInfo({ player, fallbackName }) {
 }
 
 export default function PlayerCard({ selectedPlayer, playerStats, statLoading }) {
+    const [saving, setSaving] = useState(false)
+    const [buildName, setBuildName] = useState('')
+    const [grade, setGrade] = useState(5)
+    const [adaptability, setAdaptability] = useState(5)
+    const [teamColor, setTeamColor] = useState('')
+
+    const handleSavePlayer = async () => {
+        if (!buildName.trim()) {
+            alert('빌드명을 입력해주세요! (예: 침투형 톱 쏜)')
+            return
+        }
+
+        const memberId = 1 // 현재 로그인된/테스트용 멤버 ID
+
+        // selectedPlayer의 id가 백엔드에서 요구하는 spid로 매핑되는 것으로 가정합니다.
+        const spid = selectedPlayer?.spid ?? selectedPlayer?.id
+        if (!spid) {
+            alert('선수 ID(spid)를 찾지 못해 저장할 수 없습니다.')
+            return
+        }
+
+        // 백엔드 SavedPlayerRequest DTO 규격에 맞게 포장
+        const requestData = {
+            buildName: buildName.trim(),
+            spid,
+            grade: Number(grade),
+            adaptability: Number(adaptability),
+            teamColor: teamColor.trim() || '없음',
+            focusTraining:
+                playerStats?.focusTraining ?? {
+                    speed: 0,
+                    dribble: 0,
+                },
+        }
+
+        try {
+            setSaving(true)
+            const savedId = await savedPlayerApi.savePlayer(memberId, requestData)
+            alert(`선수가 보관함에 성공적으로 저장되었습니다! (ID: ${savedId})`)
+            setBuildName('')
+            setTeamColor('')
+        } catch (error) {
+            console.error('저장 실패:', error)
+            alert('선수 저장에 실패했습니다.')
+        } finally {
+            setSaving(false)
+        }
+    }
+
     if (!selectedPlayer) return null
 
     return (
@@ -139,6 +192,109 @@ export default function PlayerCard({ selectedPlayer, playerStats, statLoading })
                         상세 스탯을 불러옵니다. (잠시만 기다려주세요)
                     </div>
                 )}
+
+                <div
+                    style={{
+                        marginTop: '20px',
+                        textAlign: 'left',
+                        background: 'var(--code-bg, #f9f9f9)',
+                        padding: '15px',
+                        borderRadius: '10px',
+                        border: '1px solid var(--accent-border, #e2c7ff)',
+                    }}
+                >
+                    <h4 style={{ margin: '0 0 10px 0', color: 'var(--text-h)' }}>커스텀 설정</h4>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        <div>
+                            <label style={{ fontSize: '14px', marginRight: '10px' }}>빌드명:</label>
+                            <input
+                                type="text"
+                                value={buildName}
+                                onChange={(e) => setBuildName(e.target.value)}
+                                placeholder="예: 침투형 톱 쏜"
+                                style={{
+                                    marginTop: '6px',
+                                    padding: '8px 10px',
+                                    borderRadius: '8px',
+                                    border: '1px solid #ccc',
+                                    width: '100%',
+                                }}
+                            />
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '15px' }}>
+                            <div>
+                                <label style={{ fontSize: '14px', marginRight: '10px' }}>강화:</label>
+                                <select
+                                    value={grade}
+                                    onChange={(e) => setGrade(e.target.value)}
+                                    style={{ marginTop: '6px', padding: '7px', borderRadius: '8px', border: '1px solid #ccc' }}
+                                >
+                                    {[...Array(10)].map((_, i) => (
+                                        <option key={i + 1} value={i + 1}>
+                                            +{i + 1}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div>
+                                <label style={{ fontSize: '14px', marginRight: '10px' }}>적응도:</label>
+                                <select
+                                    value={adaptability}
+                                    onChange={(e) => setAdaptability(e.target.value)}
+                                    style={{ marginTop: '6px', padding: '7px', borderRadius: '8px', border: '1px solid #ccc' }}
+                                >
+                                    {[...Array(5)].map((_, i) => (
+                                        <option key={i + 1} value={i + 1}>
+                                            {i + 1}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label style={{ fontSize: '14px', marginRight: '10px' }}>팀 컬러:</label>
+                            <input
+                                type="text"
+                                value={teamColor}
+                                onChange={(e) => setTeamColor(e.target.value)}
+                                placeholder="예: 토트넘 핫스퍼"
+                                style={{
+                                    marginTop: '6px',
+                                    padding: '8px 10px',
+                                    borderRadius: '8px',
+                                    border: '1px solid #ccc',
+                                    width: '100%',
+                                }}
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <div style={{ marginTop: '22px' }}>
+                    <button
+                        type="button"
+                        onClick={handleSavePlayer}
+                        disabled={saving || statLoading}
+                        style={{
+                            width: '100%',
+                            padding: '12px 14px',
+                            borderRadius: '12px',
+                            border: '1.8px solid var(--accent-border, #c084fc77)',
+                            background: saving || statLoading ? 'rgba(170,59,255,0.35)' : 'var(--accent, #aa3bff)',
+                            color: '#fff',
+                            fontSize: '16px',
+                            fontWeight: 800,
+                            cursor: saving || statLoading ? 'not-allowed' : 'pointer',
+                            boxShadow: saving ? 'none' : '0 10px 25px -12px rgba(170,59,255,0.55)',
+                            transition: 'transform 0.1s, background 0.2s',
+                        }}
+                    >
+                        {saving ? '저장 중...' : '선수 보관함에 저장'}
+                    </button>
+                </div>
             </div>
         </div>
     )
