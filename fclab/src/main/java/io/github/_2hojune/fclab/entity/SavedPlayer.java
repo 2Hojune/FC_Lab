@@ -59,4 +59,13 @@ public class SavedPlayer {
         this.teamColor = teamColor;
         this.focusTraining = focusTraining;
     }
+
+    //수정(UPDATE) 메서드
+    public void update(String buildName, int grade, int adaptability, String teamColor, String focusTraining) {
+        this.buildName = buildName;
+        this.grade = grade;
+        this.adaptability = adaptability;
+        this.teamColor = teamColor;
+        this.focusTraining = focusTraining;
+    }
 }

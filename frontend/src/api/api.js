@@ -37,10 +37,18 @@ export const savedPlayerApi = {
   },
 
   // 3. 선수 삭제 (DELETE)
-  deletePlayer: async (memberId, savedPlayerId) => {
-      const response = await api.delete(`/api/saved-players/${savedPlayerId}`, {
+  deletePlayer: async (memberId, deletePlayerId) => {
+      const response = await api.delete(`/api/saved-players/${deletePlayerId}`, {
           params: { memberId },
       })
       return response.data
-  }
+  },
+
+  // 4. 선수 수정 (PUT)
+  updatePlayer: async (memberId, updatePlayerId, requestData) => {
+    const response = await api.put(`/api/saved-players/${updatePlayerId}`, requestData, {
+      params: { memberId },
+    })
+    return response.data
+  },
 }

@@ -70,4 +70,27 @@ public class SavedPlayerController {
 
         return ResponseEntity.ok().build();
     }
+    //-----------------------------------------------------------------------------------------------------------------------
+
+    @Operation(summary = "저장된 선수 수정", description = "보관함에 있는 커스텀 선수의 설정(빌드명, 강화, 팀컬러 등)을 수정합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "선수 수정 성공"),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청 또는 수정 권한 없음")
+    })
+    @PutMapping("/{updatePlayerId}")
+    public ResponseEntity<Void> updatePlayer(
+            @Parameter(description = "요청하는 회원의 고유 ID", example = "1")
+            @RequestParam("memberId") Long memberId,
+
+            @Parameter(description = "수정할 보관함 선수의 고유 ID", example = "5")
+            @PathVariable("updatePlayerId") Long savedPlayerId,
+
+            @RequestBody SavedPlayerRequest request) {
+
+        // 서비스의 업데이트 로직 호출
+        savedPlayerService.updatePlayer(memberId, savedPlayerId, request);
+
+        return ResponseEntity.ok().build();
+    }
+
 }
