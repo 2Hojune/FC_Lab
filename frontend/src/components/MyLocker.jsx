@@ -1,7 +1,12 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { getPlayerAbility, savedPlayerApi } from '../api/api'
-import { calculateAppliedStats } from '../utils/applyPlayerStats'
-import StatsGrid from './StatsGrid'
+import {
+    calculateAppliedStats,
+    hasAbilityStats,
+    normalizeFocusTraining,
+} from '../utils/applyPlayerStats'
+import { loadPlayerStats } from '../utils/loadPlayerStats'
+import StatsModal from './StatsModal'
 
 export default function MyLocker() {
     const [players, setPlayers] = useState([])
@@ -13,9 +18,13 @@ export default function MyLocker() {
         adaptability: 5,
         teamColor: ''
     })
-    const [viewStatsId, setViewStatsId] = useState(null)
+    const [statsModalPlayer, setStatsModalPlayer] = useState(null)
+    const [baseStats, setBaseStats] = useState(null)
     const [calculatedStats, setCalculatedStats] = useState(null)
+    const [modalFocusTraining, setModalFocusTraining] = useState({})
+    const [compareEntries, setCompareEntries] = useState([])
     const [isStatLoading, setIsStatLoading] = useState(false)
+    const statRequestRef = useRef(0)
 
     const memberId = 1
 
@@ -36,14 +45,112 @@ export default function MyLocker() {
         fetchPlayers()
     }, [])
 
+    const closeStatsModal = () => {
+        statRequestRef.current += 1
+        setStatsModalPlayer(null)
+        setBaseStats(null)
+        setCalculatedStats(null)
+        setModalFocusTraining({})
+        setCompareEntries([])
+        setIsStatLoading(false)
+    }
+
+    const buildStatsColumns = () => {
+        if (!statsModalPlayer || !calculatedStats || calculatedStats.error) return []
+
+        const primary = {
+            player: statsModalPlayer,
+            stats: calculatedStats,
+            baseStats,
+            isPrimary: true,
+        }
+
+        const compared = compareEntries
+            .filter((entry) => entry.stats && !entry.loading && !entry.error)
+            .map((entry) => ({
+                player: entry.player,
+                stats: entry.stats,
+                baseStats: entry.baseStats,
+                isPrimary: false,
+            }))
+
+        return [primary, ...compared]
+    }
+
+    const handleCompareToggle = async (playerId) => {
+        const existing = compareEntries.find((entry) => entry.player.id === playerId)
+
+        if (existing) {
+            setCompareEntries((prev) => prev.filter((entry) => entry.player.id !== playerId))
+            return
+        }
+
+        if (compareEntries.length >= 2) {
+            alert('최대 2명까지 비교할 수 있습니다.')
+            return
+        }
+
+        const targetPlayer = players.find((p) => p.id === playerId)
+        if (!targetPlayer) return
+
+        setCompareEntries((prev) => [
+            ...prev,
+            { player: targetPlayer, stats: null, baseStats: null, loading: true },
+        ])
+
+        try {
+            const result = await loadPlayerStats(targetPlayer)
+
+            if (result.error) {
+                alert(result.error)
+                setCompareEntries((prev) => prev.filter((entry) => entry.player.id !== playerId))
+                return
+            }
+
+            setCompareEntries((prev) =>
+                prev.map((entry) =>
+                    entry.player.id === playerId
+                        ? { ...entry, ...result, loading: false }
+                        : entry
+                )
+            )
+        } catch (error) {
+            console.error('비교 선수 스탯 조회 실패:', error)
+            alert('비교 선수 스탯을 불러오지 못했습니다.')
+            setCompareEntries((prev) => prev.filter((entry) => entry.player.id !== playerId))
+        }
+    }
+
+    const recalculateModalStats = (player, fetchedBaseStats, focusTraining) => {
+        setCalculatedStats(
+            calculateAppliedStats(fetchedBaseStats, { ...player, focusTraining })
+        )
+    }
+
+    const handleFocusTrainingChange = (statKey, value) => {
+        setModalFocusTraining((prev) => {
+            const next = { ...prev }
+            if (value <= 0) {
+                delete next[statKey]
+            } else {
+                next[statKey] = value
+            }
+
+            if (baseStats && statsModalPlayer) {
+                recalculateModalStats(statsModalPlayer, baseStats, next)
+            }
+
+            return next
+        })
+    }
+
     const handleDelete = async (id, buildName) => {
         if (!window.confirm(`[${buildName}] 빌드를 정말 삭제하시겠습니까?`)) return
         try {
             await savedPlayerApi.deletePlayer(memberId, id)
             alert('삭제되었습니다.')
-            if (viewStatsId === id) {
-                setViewStatsId(null)
-                setCalculatedStats(null)
+            if (statsModalPlayer?.id === id) {
+                closeStatsModal()
             }
             setPlayers(players.filter(player => player.id !== id))
         } catch (error) {
@@ -53,8 +160,7 @@ export default function MyLocker() {
 
     const handleEditStart = (player) => {
         setEditingId(player.id)
-        setViewStatsId(null)
-        setCalculatedStats(null)
+        closeStatsModal()
         setEditForm({
             buildName: player.buildName,
             grade: player.grade,
@@ -94,26 +200,40 @@ export default function MyLocker() {
     }
 
     const handleNameClick = async (player) => {
-        if (viewStatsId === player.id) {
-            setViewStatsId(null)
-            setCalculatedStats(null)
-            return
-        }
-
-        setViewStatsId(player.id)
+        const requestId = ++statRequestRef.current
+        setStatsModalPlayer(player)
+        setBaseStats(null)
         setCalculatedStats(null)
+        setModalFocusTraining({})
+        setCompareEntries([])
         setIsStatLoading(true)
 
         try {
-            const baseStats = await getPlayerAbility(player.spid)
-            const finalStats = calculateAppliedStats(baseStats, player)
-            setCalculatedStats(finalStats)
+            const fetchedBaseStats = await getPlayerAbility(player.spid)
+
+            if (requestId !== statRequestRef.current) return
+
+            if (!hasAbilityStats(fetchedBaseStats)) {
+                setCalculatedStats({
+                    error: `spid(${player.spid}) 능력치를 불러오지 못했습니다. 선수 검색에서 해당 선수를 다시 선택해 저장해주세요.`,
+                })
+                return
+            }
+
+            const initialFocusTraining = normalizeFocusTraining(player.focusTraining, fetchedBaseStats)
+
+            setBaseStats(fetchedBaseStats)
+            setModalFocusTraining(initialFocusTraining)
+            recalculateModalStats(player, fetchedBaseStats, initialFocusTraining)
         } catch (error) {
             console.error('스탯 조회 실패:', error)
-            alert('기본 스탯을 불러오지 못했습니다.')
-            setViewStatsId(null)
+            if (requestId === statRequestRef.current) {
+                setCalculatedStats({ error: '기본 스탯을 불러오지 못했습니다.' })
+            }
         } finally {
-            setIsStatLoading(false)
+            if (requestId === statRequestRef.current) {
+                setIsStatLoading(false)
+            }
         }
     }
 
@@ -205,9 +325,10 @@ export default function MyLocker() {
                                             color: 'var(--text-h, #333)',
                                             fontSize: '20px',
                                             cursor: 'pointer',
-                                            textDecoration: viewStatsId === player.id ? 'underline' : 'none'
+                                            textDecoration: 'underline',
+                                            textUnderlineOffset: '3px'
                                         }}
-                                        title="클릭하여 최종 스탯 보기"
+                                        title="클릭하여 적용 스탯 보기"
                                     >
                                         {player.buildName}
                                     </h3>
@@ -217,34 +338,6 @@ export default function MyLocker() {
                                         <div><strong>적응도:</strong> {player.adaptability}</div>
                                         <div><strong>팀 컬러:</strong> {player.teamColor}</div>
                                     </div>
-
-                                    {viewStatsId === player.id && (
-                                        <div
-                                            style={{
-                                                marginTop: '16px',
-                                                padding: '14px',
-                                                background: 'var(--code-bg, #f4f3ec)',
-                                                borderRadius: '12px',
-                                                border: '1px solid var(--accent-border, #e2c7ff)'
-                                            }}
-                                        >
-                                            <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--accent)', marginBottom: '4px' }}>
-                                                적용 스탯 (+{player.grade} · 적응도 {player.adaptability})
-                                            </div>
-                                            {calculatedStats?.name && (
-                                                <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>
-                                                    {calculatedStats.name}
-                                                </div>
-                                            )}
-                                            {isStatLoading ? (
-                                                <div style={{ fontSize: '14px', color: 'var(--accent)', padding: '12px 0' }}>
-                                                    스탯을 계산하고 있습니다...
-                                                </div>
-                                            ) : (
-                                                <StatsGrid stats={calculatedStats} />
-                                            )}
-                                        </div>
-                                    )}
 
                                     {player.focusTraining && Object.keys(player.focusTraining).length > 0 && (
                                         <div style={{ marginTop: '16px', padding: '12px', background: 'var(--code-bg, #f4f3ec)', borderRadius: '10px' }}>
@@ -282,6 +375,20 @@ export default function MyLocker() {
                     ))}
                 </div>
             )}
+
+            <StatsModal
+                player={statsModalPlayer}
+                stats={calculatedStats}
+                baseStats={baseStats}
+                focusTraining={modalFocusTraining}
+                onFocusTrainingChange={handleFocusTrainingChange}
+                allPlayers={players}
+                compareEntries={compareEntries}
+                onCompareToggle={handleCompareToggle}
+                statsColumns={buildStatsColumns()}
+                loading={isStatLoading}
+                onClose={closeStatsModal}
+            />
         </div>
     )
 }

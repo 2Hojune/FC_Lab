@@ -1,68 +1,12 @@
 import { useState } from 'react'
 
 import { savedPlayerApi } from '../api/api'
-
-const COLS_PER_ROW = 4
+import StatsGrid from './StatsGrid'
 
 const isKnownText = (value) => {
     if (typeof value !== 'string') return false
     const normalized = value.trim().toLowerCase()
     return normalized !== '' && normalized !== 'unknown' && normalized !== 'null' && normalized !== 'undefined'
-}
-
-// 💡 스탯만 순수하게 그리는 컴포넌트로 역할 축소! (이름 렌더링 제거)
-function StatsGrid({ stats }) {
-    if (!stats) return null
-    const { error, ...otherStats } = stats
-
-    // 에러 발생 시 처리
-    if (error) {
-        return (
-            <div style={{ color: '#e53935', fontSize: '18px', fontWeight: 'bold', margin: '20px 0' }}>
-                ❌ 스탯 정보를 불러올 수 없습니다. ({error})
-            </div>
-        )
-    }
-
-    const filteredStatsArr = Object.entries(otherStats)
-    if (filteredStatsArr.length === 0) {
-        return <div style={{ color: 'var(--text)', fontSize: '16px', margin: '30px 0' }}>스탯 데이터가 없습니다.</div>
-    }
-
-    const rows = []
-    for (let i = 0; i < filteredStatsArr.length; i += COLS_PER_ROW) {
-        rows.push(filteredStatsArr.slice(i, i + COLS_PER_ROW))
-    }
-
-    return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '16px' }}>
-            {rows.map((row, idx) => (
-                <div key={idx} style={{ display: 'grid', gridTemplateColumns: `repeat(${COLS_PER_ROW}, 1fr)`, gap: '16px' }}>
-                    {row.map(([key, value]) => (
-                        <div
-                            key={key}
-                            style={{
-                                background: 'var(--code-bg, #f4f3ec)',
-                                borderRadius: '9px',
-                                border: '1.5px solid var(--accent-border, #c084fc)',
-                                boxShadow: '0 1px 2px 0 rgba(170,59,255,0.07)',
-                                padding: '10px 14px',
-                                textAlign: 'center',
-                                fontWeight: '500',
-                                fontSize: '17px',
-                                color: 'var(--text-h, #aa3bff)',
-                            }}
-                        >
-                            <div style={{ fontSize: '13px', color: 'var(--text, #6b6375)', marginBottom: '2px', wordBreak: 'keep-all' }}>
-                                {key}
-                            </div>
-                            <div style={{ fontWeight: 600 }}>{value}</div>
-                        </div>
-                    ))}
-                </div>
-            ))}
-        </div>
-    )
 }
 
 // 💡 이름과 시즌 배지는 여기서 전담합니다!
@@ -130,7 +74,7 @@ export default function PlayerCard({ selectedPlayer, playerStats, statLoading })
         const memberId = 1 // 현재 로그인된/테스트용 멤버 ID
 
         // selectedPlayer의 id가 백엔드에서 요구하는 spid로 매핑되는 것으로 가정합니다.
-        const spid = selectedPlayer?.spid ?? selectedPlayer?.id
+        const spid = selectedPlayer?.id ?? selectedPlayer?.spid
         if (!spid) {
             alert('선수 ID(spid)를 찾지 못해 저장할 수 없습니다.')
             return
